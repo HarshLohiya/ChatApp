@@ -1,10 +1,14 @@
 package com.example.chatapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +28,7 @@ import com.example.chatapp.utils.AndroidUtil;
 import com.example.chatapp.utils.FirebaseUtil;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
@@ -53,15 +58,20 @@ public class ChatActivity extends AppCompatActivity {
 
     EditText messageInput;
     TextView otherUsername, textAvailability;
-    ImageButton sendMessageBtn;
-    ImageButton backBtn;
+    ImageButton sendMessageBtn, backBtn, attachmentBtn;
     ImageView profilePic;
     RecyclerView recyclerView;
+    ProgressDialog dialog;
+
+    String filePath;
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        sharedPreferences = this.getSharedPreferences("com.example.chatapp", MODE_PRIVATE);
 
         otherUser = AndroidUtil.getUserModelFromIntent(getIntent());
         chatroomId = FirebaseUtil.getChatroomId(FirebaseUtil.currentUserId(), otherUser.getUserId());
@@ -71,8 +81,13 @@ public class ChatActivity extends AppCompatActivity {
         textAvailability = findViewById(R.id.textAvailability);
         backBtn = findViewById(R.id.back_btn);
         sendMessageBtn = findViewById(R.id.message_send_btn);
+        attachmentBtn = findViewById(R.id.attachment_btn);
         profilePic = findViewById(R.id.profile_pic_image_view);
         recyclerView = findViewById(R.id.chat_recycler_view);
+
+        dialog = new ProgressDialog(this);
+        dialog.setMessage("Sending image...");
+        dialog.setCancelable(false);
 
         FirebaseUtil.getOtherProfilePicStorageRef(otherUser.getUserId()).getDownloadUrl()
                 .addOnCompleteListener(t -> {
@@ -90,6 +105,14 @@ public class ChatActivity extends AppCompatActivity {
             if (message.isEmpty())
                 return;
             sendMessageToUser(message);
+        });
+
+        attachmentBtn.setOnClickListener(v -> {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            startActivityForResult(intent, 11);
+
         });
 
         getOrCreateChatroomModel();
@@ -180,6 +203,49 @@ public class ChatActivity extends AppCompatActivity {
                }
            }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 11){
+            if (data != null && data.getData() != null){
+                int imageIdx = sharedPreferences.getInt("imageIdx", 1);
+
+                dialog.show();
+                Uri imageUri = data.getData();
+                FirebaseUtil.getImageMessageStorageReference(imageIdx).putFile(imageUri)
+                        .addOnCompleteListener(t -> {
+                            dialog.dismiss();
+                            FirebaseUtil.getImageMessageStorageReference(imageIdx).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    filePath = uri.toString();
+
+                                    chatroomModel.setLastMessageTimestamp(Timestamp.now());
+                                    chatroomModel.setLastMessageSenderId(FirebaseUtil.currentUserId());
+                                    chatroomModel.setLastMessage("Photo");
+                                    FirebaseUtil.getChatroomReference(chatroomId).set(chatroomModel);
+
+                                    ChatMessageModel chatMessageModel = new ChatMessageModel("photo123", FirebaseUtil.currentUserId(), Timestamp.now());
+                                    chatMessageModel.setImageUrl(filePath);
+                                    FirebaseUtil.getChatroomMessageReference(chatroomId).add(chatMessageModel)
+                                            .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<DocumentReference> task) {
+                                                    if (task.isSuccessful()){
+                                                        messageInput.setText("");
+                                                        sendNotification("Photo");
+                                                    }
+                                                }
+                                            });
+                                }
+                            });
+                            sharedPreferences.edit().putInt("imageIdx", imageIdx + 1).apply();
+                        });
+            }
+        }
     }
 
     private void callApi(JSONObject jsonObject){

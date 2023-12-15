@@ -75,12 +75,28 @@
             android:id="@+id/chat_message_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Write message here"
             android:layout_centerInParent="true"
-            android:layout_margin="10dp"
-            android:background="@drawable/message_sent_background"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_toLeftOf="@id/message_send_btn"
+            android:background="@drawable/btn_rounded_corner"
             android:elevation="4dp"
-            android:padding="10dp"
+            android:inputType="textCapSentences|textMultiLine"
+            android:hint="Write message here"
+            android:paddingLeft="10dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingRight="40dp"/>
+
+        <ImageButton
+            android:id="@+id/attachment_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/clip"
+            android:layout_centerInParent="true"
+            style="?android:buttonBarButtonStyle"
+            android:elevation="10dp"
             android:layout_toLeftOf="@id/message_send_btn"/>
 
         <ImageButton
@@ -92,8 +108,7 @@
             android:layout_centerInParent="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             app:tint="@color/my_primary"
-            android:padding="8dp"
-            android:layout_marginStart="10dp"/>
+            android:layout_marginStart="8dp"/>
     </RelativeLayout>
 
 </RelativeLayout>

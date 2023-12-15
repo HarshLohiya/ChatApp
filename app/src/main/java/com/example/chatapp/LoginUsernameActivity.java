@@ -85,8 +85,6 @@ public class LoginUsernameActivity extends AppCompatActivity {
             usernameInput.setError("Username length should be atleast 3 characters");
             return;
         }
-
-//        userModel.setUsername(username);
         setInProgress(true);
 
         if (userModel != null){
@@ -94,16 +92,6 @@ public class LoginUsernameActivity extends AppCompatActivity {
         } else {
             userModel = new UserModel(phoneNumber, username, username.toLowerCase(), Timestamp.now(), FirebaseUtil.currentUserId());
         }
-
-//        if (selectedImageUri != null) {
-//            FirebaseUtil.getCurrentProfilePicStorageRef().putFile(selectedImageUri)
-//                    .addOnCompleteListener(task -> {
-//                        updateToFirestore();
-//                    });
-//        }
-//        else{
-//            updateToFirestore();
-//        }
         updateToFirestore();
     }
 
@@ -124,32 +112,6 @@ public class LoginUsernameActivity extends AppCompatActivity {
                     }
                 });
     }
-
-//    private void setUsername(){
-//        String username = usernameInput.getText().toString();
-//        if (username.isEmpty() || username.length() < 3){
-//            usernameInput.setError("Username length should be at least 3 characters");
-//            return;
-//        }
-//        setInProgress(true);
-//        if (userModel != null){
-//            userModel.setUsername(username);
-//        } else {
-//            userModel = new UserModel(phoneNumber, username, Timestamp.now(), FirebaseUtil.currentUserId());
-//        }
-//
-//        FirebaseUtil.currentUserDetails().set(userModel).addOnCompleteListener(new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                setInProgress(false);
-//                if (task.isSuccessful()){
-//                    Intent intent = new Intent(LoginUsernameActivity.this, MainActivity.class);
-//                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//                    startActivity(intent);
-//                }
-//            }
-//        });
-//    }
 
     private void getUserData() {
         setInProgress(true);
