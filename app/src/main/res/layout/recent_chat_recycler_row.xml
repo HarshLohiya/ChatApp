@@ -30,6 +30,7 @@
                 android:layout_height="wrap_content"
                 tools:text="User name"
                 android:textSize="18sp"
+                android:textColor="@color/grey"
                 android:textStyle="bold" />
 
             <TextView
@@ -38,6 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="10dp"
+                android:textColor="@color/grey"
                 tools:text="12:00pm" />
 
         </RelativeLayout>
@@ -46,6 +48,7 @@
             android:id="@+id/last_message_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/grey"
             tools:text="+000000000000" />
 
     </LinearLayout>

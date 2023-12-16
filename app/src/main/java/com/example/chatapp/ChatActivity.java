@@ -11,6 +11,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -40,6 +43,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Objects;
 
 import okhttp3.Call;
@@ -58,7 +62,7 @@ public class ChatActivity extends AppCompatActivity {
 
     EditText messageInput;
     TextView otherUsername, textAvailability;
-    ImageButton sendMessageBtn, backBtn, attachmentBtn;
+    ImageButton sendMessageBtn, audioMessageBtn, backBtn, attachmentBtn;
     ImageView profilePic;
     RecyclerView recyclerView;
     ProgressDialog dialog;
@@ -81,6 +85,7 @@ public class ChatActivity extends AppCompatActivity {
         textAvailability = findViewById(R.id.textAvailability);
         backBtn = findViewById(R.id.back_btn);
         sendMessageBtn = findViewById(R.id.message_send_btn);
+        audioMessageBtn = findViewById(R.id.audio_send_btn);
         attachmentBtn = findViewById(R.id.attachment_btn);
         profilePic = findViewById(R.id.profile_pic_image_view);
         recyclerView = findViewById(R.id.chat_recycler_view);
@@ -107,12 +112,45 @@ public class ChatActivity extends AppCompatActivity {
             sendMessageToUser(message);
         });
 
+        audioMessageBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak to text");
+
+            try {
+                startActivityForResult(intent, 111);
+            }
+            catch (Exception e) {
+                Toast.makeText(this, e.getMessage() + "", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         attachmentBtn.setOnClickListener(v -> {
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_GET_CONTENT);
             intent.setType("image/*");
-            startActivityForResult(intent, 11);
+            startActivityForResult(intent, 101);
 
+        });
+
+        messageInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() == 0){
+                    sendMessageBtn.setVisibility(View.GONE);
+                    audioMessageBtn.setVisibility(View.VISIBLE);
+                } else {
+                    sendMessageBtn.setVisibility(View.VISIBLE);
+                    audioMessageBtn.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+
+            @Override
+            public void afterTextChanged(Editable editable) { }
         });
 
         getOrCreateChatroomModel();
@@ -209,7 +247,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 11){
+        if (requestCode == 101){
             if (data != null && data.getData() != null){
                 int imageIdx = sharedPreferences.getInt("imageIdx", 1);
 
@@ -244,6 +282,13 @@ public class ChatActivity extends AppCompatActivity {
                             });
                             sharedPreferences.edit().putInt("imageIdx", imageIdx + 1).apply();
                         });
+            }
+        }
+
+        if (requestCode == 111){
+            if (resultCode == RESULT_OK && data != null) {
+                ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                messageInput.setText(Objects.requireNonNull(result).get(0));
             }
         }
     }

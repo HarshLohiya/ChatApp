@@ -25,6 +25,8 @@
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:hint="Username"
+        android:textColorHint="@color/grey"
+        android:textColor="@color/black"
         android:layout_margin="10dp"
         android:background="@drawable/message_sent_background"
         android:elevation="5dp"/>
@@ -35,6 +37,8 @@
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:hint="Phone Number"
+        android:textColorHint="@color/grey"
+        android:textColor="@color/black"
         android:layout_margin="10dp"
         android:background="@drawable/message_sent_background"
         android:enabled="false"
@@ -67,7 +71,8 @@
         android:id="@+id/logout_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Logout"/>
+        android:text="Logout"
+        android:textColor="@color/grey"/>
 
 
 </LinearLayout>
