@@ -87,6 +87,7 @@ public class ProfileFragment extends Fragment {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
+                        FirebaseUtil.setAvailability(0);
                         FirebaseUtil.logout();
                         Intent intent = new Intent(getContext(), SplashActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
