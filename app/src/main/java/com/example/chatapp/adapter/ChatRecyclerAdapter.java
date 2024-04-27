@@ -40,22 +40,22 @@ public class ChatRecyclerAdapter extends FirestoreRecyclerAdapter<ChatMessageMod
         if (model.getSenderId().equals(FirebaseUtil.currentUserId())){
             holder.leftChatLayout.setVisibility(View.GONE);
             holder.rightChatLayout.setVisibility(View.VISIBLE);
-            if (model.getMessage().equals("photo123")){
+            if (model.getMessage().equals("photo_img")){
                 holder.rightChatImageView.setVisibility(View.VISIBLE);
                 Glide.with(context).load(model.getImageUrl()).placeholder(R.drawable.placeholder).into(holder.rightChatImageView);
             } else {
-                holder.rightChatTextview.setText(model.getMessage());
+                holder.rightChatTextview.setText(FirebaseUtil.decrypt(model.getMessage()));
             }
             holder.rightChatTime.setText(time);
         }
         else{
             holder.rightChatLayout.setVisibility(View.GONE);
             holder.leftChatLayout.setVisibility(View.VISIBLE);
-            if (model.getMessage().equals("photo123")){
+            if (model.getMessage().equals("photo_img")){
                 holder.leftChatImageView.setVisibility(View.VISIBLE);
                 Glide.with(context).load(model.getImageUrl()).placeholder(R.drawable.placeholder).into(holder.leftChatImageView);
             } else {
-                holder.leftChatTextview.setText(model.getMessage());
+                holder.leftChatTextview.setText(FirebaseUtil.decrypt(model.getMessage()));
             }
             holder.leftChatTime.setText(time);
         }

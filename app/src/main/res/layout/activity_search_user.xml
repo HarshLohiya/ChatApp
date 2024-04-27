@@ -54,6 +54,7 @@
             android:background="@drawable/message_sent_background"
             android:elevation="4dp"
             android:hint="Username"
+            android:inputType="textCapWords"
             android:textColorHint="@color/grey"
             android:textColor="@color/black"
             android:padding="10dp" />

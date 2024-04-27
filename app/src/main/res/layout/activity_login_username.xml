@@ -82,6 +82,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Enter your username"
+        android:textColor="@color/grey"
         android:textSize="25sp"
         android:textStyle="bold"
         android:letterSpacing="0.08"
@@ -101,6 +102,8 @@
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:hint="Username"
+            android:textColorHint="@color/grey"
+            android:textColor="@color/black"
             android:layout_margin="10dp"
             android:background="@drawable/message_sent_background"
             android:elevation="5dp"/>

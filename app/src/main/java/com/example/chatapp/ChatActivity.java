@@ -183,10 +183,10 @@ public class ChatActivity extends AppCompatActivity {
     private void sendMessageToUser(String message) {
         chatroomModel.setLastMessageTimestamp(Timestamp.now());
         chatroomModel.setLastMessageSenderId(FirebaseUtil.currentUserId());
-        chatroomModel.setLastMessage(message);
+        chatroomModel.setLastMessage(FirebaseUtil.encrypt(message));
         FirebaseUtil.getChatroomReference(chatroomId).set(chatroomModel);
 
-        ChatMessageModel chatMessageModel = new ChatMessageModel(message, FirebaseUtil.currentUserId(), Timestamp.now());
+        ChatMessageModel chatMessageModel = new ChatMessageModel(FirebaseUtil.encrypt(message), FirebaseUtil.currentUserId(), Timestamp.now());
         FirebaseUtil.getChatroomMessageReference(chatroomId).add(chatMessageModel)
                 .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                     @Override
@@ -266,7 +266,7 @@ public class ChatActivity extends AppCompatActivity {
                                     chatroomModel.setLastMessage("Photo");
                                     FirebaseUtil.getChatroomReference(chatroomId).set(chatroomModel);
 
-                                    ChatMessageModel chatMessageModel = new ChatMessageModel("photo123", FirebaseUtil.currentUserId(), Timestamp.now());
+                                    ChatMessageModel chatMessageModel = new ChatMessageModel("photo_img", FirebaseUtil.currentUserId(), Timestamp.now());
                                     chatMessageModel.setImageUrl(filePath);
                                     FirebaseUtil.getChatroomMessageReference(chatroomId).add(chatMessageModel)
                                             .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
