@@ -7,6 +7,7 @@ import java.util.List;
 public class ChatroomModel {
     String chatroomId;
     List<String> userIds;
+    List<Boolean> request;
     Timestamp lastMessageTimestamp;
     String lastMessageSenderId;
     String lastMessage;
@@ -14,9 +15,10 @@ public class ChatroomModel {
     public ChatroomModel() {
     }
 
-    public ChatroomModel(String chatroomId, List<String> userIds, Timestamp lastMessageTimestamp, String lastMessageSenderId) {
+    public ChatroomModel(String chatroomId, List<String> userIds, List<Boolean> request, Timestamp lastMessageTimestamp, String lastMessageSenderId) {
         this.chatroomId = chatroomId;
         this.userIds = userIds;
+        this.request = request;
         this.lastMessageTimestamp = lastMessageTimestamp;
         this.lastMessageSenderId = lastMessageSenderId;
     }
@@ -35,6 +37,14 @@ public class ChatroomModel {
 
     public void setUserIds(List<String> userIds) {
         this.userIds = userIds;
+    }
+
+    public List<Boolean> getRequest() {
+        return request;
+    }
+
+    public void setRequest(List<Boolean> request) {
+        this.request = request;
     }
 
     public Timestamp getLastMessageTimestamp() {

@@ -16,9 +16,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +45,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -67,8 +70,14 @@ public class ChatActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     ProgressDialog dialog;
 
+    RelativeLayout bottomLayout, receiveRequestLayout, sendRequestLayout;
+    TextView receiveRequestTextView, sendRequestTextView;
+    Button acceptBtn, rejectBtn, sendRequestBtn;
+
     String filePath;
     SharedPreferences sharedPreferences;
+    List<Boolean> requestList;
+    boolean requestGiven = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,20 +99,62 @@ public class ChatActivity extends AppCompatActivity {
         profilePic = findViewById(R.id.profile_pic_image_view);
         recyclerView = findViewById(R.id.chat_recycler_view);
 
+        bottomLayout = findViewById(R.id.bottom_layout);
+        receiveRequestLayout = findViewById(R.id.receiveRequestLayout);
+        sendRequestLayout = findViewById(R.id.sendRequestLayout);
+        receiveRequestTextView = findViewById(R.id.receiveRequestTextView);
+        sendRequestTextView = findViewById(R.id.sendRequestTextView);
+        acceptBtn = findViewById(R.id.acceptBtn);
+        rejectBtn = findViewById(R.id.rejectBtn);
+        sendRequestBtn = findViewById(R.id.sendRequestBtn);
+
         dialog = new ProgressDialog(this);
         dialog.setMessage("Sending image...");
         dialog.setCancelable(false);
 
+        otherUsername.setText(otherUser.getUsername());
+        getOrCreateChatroomModel();
+
         FirebaseUtil.getOtherProfilePicStorageRef(otherUser.getUserId()).getDownloadUrl()
                 .addOnCompleteListener(t -> {
-                    if (t.isSuccessful()){
+                    if (t.isSuccessful()) {
                         Uri uri = t.getResult();
                         AndroidUtil.setProfilePic(this, uri, profilePic);
                     }
                 });
 
         backBtn.setOnClickListener(v -> onBackPressed());
-        otherUsername.setText(otherUser.getUsername());
+
+        sendRequestBtn.setOnClickListener(v -> {
+            chatroomModel = new ChatroomModel(
+                    chatroomId,
+                    (FirebaseUtil.currentUserId().hashCode() < otherUser.getUserId().hashCode()) ? Arrays.asList(FirebaseUtil.currentUserId(), otherUser.getUserId()) : Arrays.asList(otherUser.getUserId(), FirebaseUtil.currentUserId()),
+                    (FirebaseUtil.currentUserId().hashCode() < otherUser.getUserId().hashCode()) ? Arrays.asList(true, false) : Arrays.asList(false, true),
+                    Timestamp.now(),
+                    ""
+            );
+            chatroomModel.setLastMessage(FirebaseUtil.encrypt("Request"));
+            chatroomModel.setLastMessageTimestamp(Timestamp.now());
+            FirebaseUtil.getChatroomReference(chatroomId).set(chatroomModel);
+
+            sendRequestBtn.setEnabled(false);
+            sendRequestBtn.setText("Request Sent");
+        });
+
+        acceptBtn.setOnClickListener(v -> {
+            FirebaseUtil.getChatroomReference(chatroomId).update("request", Arrays.asList(true, true));
+
+            finish();
+            startActivity(getIntent());
+        });
+
+        rejectBtn.setOnClickListener(v -> {
+            FirebaseUtil.getChatroomReference(chatroomId).delete();
+
+            sendRequestLayout.setVisibility(View.VISIBLE);
+            bottomLayout.setVisibility(View.GONE);
+            receiveRequestLayout.setVisibility(View.GONE);
+        });
 
         sendMessageBtn.setOnClickListener(v -> {
             String message = messageInput.getText().toString().trim();
@@ -120,8 +171,7 @@ public class ChatActivity extends AppCompatActivity {
 
             try {
                 startActivityForResult(intent, 111);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 Toast.makeText(this, e.getMessage() + "", Toast.LENGTH_SHORT).show();
             }
         });
@@ -137,7 +187,7 @@ public class ChatActivity extends AppCompatActivity {
         messageInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (charSequence.length() == 0){
+                if (charSequence.length() == 0) {
                     sendMessageBtn.setVisibility(View.GONE);
                     audioMessageBtn.setVisibility(View.VISIBLE);
                 } else {
@@ -147,17 +197,20 @@ public class ChatActivity extends AppCompatActivity {
             }
 
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
 
             @Override
-            public void afterTextChanged(Editable editable) { }
+            public void afterTextChanged(Editable editable) {
+            }
         });
-
-        getOrCreateChatroomModel();
-        setupChatRecyclerView();
     }
 
     private void setupChatRecyclerView() {
+        bottomLayout.setVisibility(View.VISIBLE);
+        receiveRequestLayout.setVisibility(View.GONE);
+        sendRequestLayout.setVisibility(View.GONE);
+
         Query query = FirebaseUtil.getChatroomMessageReference(chatroomId)
                 .orderBy("timestamp", Query.Direction.DESCENDING);
 
@@ -191,7 +244,7 @@ public class ChatActivity extends AppCompatActivity {
                 .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentReference> task) {
-                        if (task.isSuccessful()){
+                        if (task.isSuccessful()) {
                             messageInput.setText("");
                             sendNotification(message);
                         }
@@ -200,46 +253,70 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void getOrCreateChatroomModel() {
+        requestList = new ArrayList<>();
         FirebaseUtil.getChatroomReference(chatroomId).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()){
+            if (task.isSuccessful()) {
                 chatroomModel = task.getResult().toObject(ChatroomModel.class);
-                if (chatroomModel == null){
-                    //first time chat
-                    chatroomModel = new ChatroomModel(
-                            chatroomId,
-                            Arrays.asList(FirebaseUtil.currentUserId(), otherUser.getUserId()),
-                            Timestamp.now(),
-                            ""
-                    );
+                if (chatroomModel == null) {
+                    sendRequestLayout.setVisibility(View.VISIBLE);
+                    receiveRequestLayout.setVisibility(View.GONE);
+                    bottomLayout.setVisibility(View.GONE);
+                    sendRequestTextView.setText("Do you want to send request to chat with " + otherUser.getUsername() + "?");
+                } else {
+                    int i;
+                    if (FirebaseUtil.currentUserId().hashCode() < otherUser.getUserId().hashCode())
+                        i = 0;
+                    else i = 1;
+//                    Log.i("CHECK", i+"");
 
-                    FirebaseUtil.getChatroomReference(chatroomId).set(chatroomModel);
+                    if (chatroomModel.getRequest().get(0) && chatroomModel.getRequest().get(1))
+                        setupChatRecyclerView();
+                    else if (!chatroomModel.getRequest().get(i)) {
+                        receiveRequestLayout.setVisibility(View.VISIBLE);
+                        sendRequestLayout.setVisibility(View.GONE);
+                        bottomLayout.setVisibility(View.GONE);
+
+                        receiveRequestTextView.setText("Do you want to accept the request to chat with " + otherUser.getUsername() + "?");
+                    } else {
+                        sendRequestLayout.setVisibility(View.VISIBLE);
+                        receiveRequestLayout.setVisibility(View.GONE);
+                        bottomLayout.setVisibility(View.GONE);
+
+                        sendRequestBtn.setEnabled(false);
+                        sendRequestBtn.setText("Request Sent");
+                    }
                 }
+            }
+            else {
+                sendRequestLayout.setVisibility(View.VISIBLE);
+                receiveRequestLayout.setVisibility(View.GONE);
+                bottomLayout.setVisibility(View.GONE);
+                sendRequestTextView.setText("Do you want to send request to chat with " + otherUser.getUsername() + "?");
             }
         });
     }
 
     private void sendNotification(String message) {
         FirebaseUtil.currentUserDetails().get().addOnCompleteListener(task -> {
-           if (task.isSuccessful()){
-               UserModel currentUser = task.getResult().toObject(UserModel.class);
-               try{
-                   JSONObject jsonObject = new JSONObject();
+            if (task.isSuccessful()) {
+                UserModel currentUser = task.getResult().toObject(UserModel.class);
+                try {
+                    JSONObject jsonObject = new JSONObject();
 
-                   JSONObject notificationObj = new JSONObject();
-                   notificationObj.put("title", currentUser.getUsername());
-                   notificationObj.put("body", message);
+                    JSONObject notificationObj = new JSONObject();
+                    notificationObj.put("title", currentUser.getUsername());
+                    notificationObj.put("body", message);
 
-                   JSONObject dataObj = new JSONObject();
-                   dataObj.put("userId", currentUser.getUserId());
+                    JSONObject dataObj = new JSONObject();
+                    dataObj.put("userId", currentUser.getUserId());
 
-                   jsonObject.put("notification", notificationObj);
-                   jsonObject.put("data", dataObj);
-                   jsonObject.put("to", otherUser.getFcmToken());
-                   callApi(jsonObject);
-               }
-               catch(Exception e){
-               }
-           }
+                    jsonObject.put("notification", notificationObj);
+                    jsonObject.put("data", dataObj);
+                    jsonObject.put("to", otherUser.getFcmToken());
+                    callApi(jsonObject);
+                } catch (Exception e) {
+                }
+            }
         });
     }
 
@@ -247,8 +324,8 @@ public class ChatActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 101){
-            if (data != null && data.getData() != null){
+        if (requestCode == 101) {
+            if (data != null && data.getData() != null) {
                 int imageIdx = sharedPreferences.getInt("imageIdx", 1);
 
                 dialog.show();
@@ -263,7 +340,7 @@ public class ChatActivity extends AppCompatActivity {
 
                                     chatroomModel.setLastMessageTimestamp(Timestamp.now());
                                     chatroomModel.setLastMessageSenderId(FirebaseUtil.currentUserId());
-                                    chatroomModel.setLastMessage("Photo");
+                                    chatroomModel.setLastMessage(FirebaseUtil.encrypt("Photo"));
                                     FirebaseUtil.getChatroomReference(chatroomId).set(chatroomModel);
 
                                     ChatMessageModel chatMessageModel = new ChatMessageModel("photo_img", FirebaseUtil.currentUserId(), Timestamp.now());
@@ -272,7 +349,7 @@ public class ChatActivity extends AppCompatActivity {
                                             .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<DocumentReference> task) {
-                                                    if (task.isSuccessful()){
+                                                    if (task.isSuccessful()) {
                                                         messageInput.setText("");
                                                         sendNotification("Photo");
                                                     }
@@ -285,7 +362,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
 
-        if (requestCode == 111){
+        if (requestCode == 111) {
             if (resultCode == RESULT_OK && data != null) {
                 ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                 messageInput.setText(Objects.requireNonNull(result).get(0));
@@ -293,7 +370,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private void callApi(JSONObject jsonObject){
+    private void callApi(JSONObject jsonObject) {
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         OkHttpClient client = new OkHttpClient();
         String url = "https://fcm.googleapis.com/fcm/send";
@@ -310,6 +387,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
 
             }
+
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
 
@@ -350,7 +428,7 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if (chatroomModel.getLastMessage() == null)
-            FirebaseFirestore.getInstance().collection("chatrooms").document(chatroomId).delete();
+//        if (chatroomModel.getLastMessage() == null)
+//            FirebaseFirestore.getInstance().collection("chatrooms").document(chatroomId).delete();
     }
 }

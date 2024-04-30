@@ -70,7 +70,8 @@
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:layout_alignParentBottom="true"
-        android:padding="8dp">
+        android:padding="8dp"
+        android:visibility="gone">
 
         <EditText
             android:id="@+id/chat_message_input"
@@ -128,6 +129,63 @@
                 android:src="@drawable/mic_icon"
                 app:tint="@color/white" />
         </RelativeLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/receiveRequestLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="8dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/receiveRequestTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Do you want to accept the request to chat with Test User?"
+            android:textColor="@color/grey"
+            android:textSize="15sp"/>
+
+        <Button
+            android:id="@+id/acceptBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/receiveRequestTextView"
+            android:text="Accept"/>
+
+        <Button
+            android:id="@+id/rejectBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_below="@id/receiveRequestTextView"
+            android:layout_toRightOf="@id/acceptBtn"
+            android:text="Reject"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/sendRequestLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="8dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/sendRequestTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Do you want to send request to chat with Test User?"
+            android:textColor="@color/grey"
+            android:textSize="15sp"/>
+
+        <Button
+            android:id="@+id/sendRequestBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/sendRequestTextView"
+            android:text="Send request"/>
     </RelativeLayout>
 
 </RelativeLayout>
