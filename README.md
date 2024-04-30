@@ -9,6 +9,8 @@ ChatApp is a Java-based Android application built with Firebase, FCM, and Glide.
 
 - **Real-time Chat:** Enables users to communicate in real-time with other users, with chat histories stored efficiently in Firebase Firestore.
 
+- **Chat Request System:** Enhances security by allowing users to initiate chats only after their request is accepted by the other user, preventing unwanted communication.
+
 - **Message Encryption:** Ensures the security of messages by encrypting them using AES before storing them in the database, safeguarding user privacy and data integrity.
 
 - **Media Content Handling:** Supports the storage and sharing of media content within chats, ensuring a rich messaging experience.
