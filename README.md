@@ -1,6 +1,6 @@
 # ChatApp
 
-ChatApp is a Java-based Android application built with Firebase, FCM, and Glide. It offers seamless authentication via OTP verification, leveraging Firebase Firestore for efficient data storage including user profiles, chat histories, and media content. The app features real-time user status indicators, username search functionality, and instant notifications powered by FCM for new messages.
+ChatApp is a Java-based realtime chatting Android application built with Firebase, FCM, and Glide. It offers seamless authentication via OTP verification, leveraging Firebase Firestore for efficient data storage including user profiles, chat histories, and media content. The app features real-time user status indicators, username search functionality, and instant notifications powered by FCM for new messages.
 
 
 ## Features
