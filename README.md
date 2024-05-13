@@ -17,6 +17,8 @@ ChatApp is a Java-based realtime chatting Android application built with Firebas
 
 - **Media Content Handling:** Supports the storage and sharing of media content within chats, ensuring a rich messaging experience.
 
+- **Offline Message Queue:** Messages sent while offline are queued and sent automatically once the user goes online, ensuring seamless communication even in low-connectivity scenarios.
+
 - **User Presence Indicators:** Displays users' online status, allowing for better communication timing and engagement.
 
 - **Dual Search Functionality:** Facilitates easy discovery of other users through two search options: by username or by mobile number, providing flexibility and convenience.
