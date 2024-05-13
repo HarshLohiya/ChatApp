@@ -13,13 +13,13 @@ ChatApp is a Java-based realtime chatting Android application built with Firebas
 
 - **Message Encryption:** Ensures the security of messages by encrypting them using AES before storing them in the database, safeguarding user privacy and data integrity.
 
+- **Instant Notifications:** Employs FCM to deliver instant notifications upon receiving new chat messages, ensuring timely responses.
+
 - **Media Content Handling:** Supports the storage and sharing of media content within chats, ensuring a rich messaging experience.
 
 - **User Presence Indicators:** Displays users' online status, allowing for better communication timing and engagement.
 
-- **User Search Functionality:** Facilitates easy discovery of other users by enabling search through usernames.
-
-- **Instant Notifications:** Employs FCM to deliver instant notifications upon receiving new chat messages, ensuring timely responses.
+- **Dual Search Functionality:** Facilitates easy discovery of other users through two search options: by username or by mobile number, providing flexibility and convenience.
 
 
 ## Tech Stack
